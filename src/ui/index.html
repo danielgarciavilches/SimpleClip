@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SimpleClip</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg>
+    <span>SimpleClip</span>
+  </div>
+  <div class="file-label" id="fileLabel"></div>
+  <div class="top-actions">
+    <button class="btn ghost" id="openBtn" title="Open a video (Ctrl+O)">Open video</button>
+    <button class="btn ghost icon" id="settingsBtn" title="Settings" aria-label="Settings">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h9M19 6h1M4 12h3M13 12h7M4 18h11M21 18h-1"/><circle cx="16" cy="6" r="2.5"/><circle cx="10" cy="12" r="2.5"/><circle cx="17.5" cy="18" r="2.5"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- Empty state -->
+  <section id="emptyState" class="drop-zone">
+    <div class="drop-inner">
+      <svg viewBox="0 0 24 24" width="44" height="44" aria-hidden="true"><path fill="currentColor" d="M4 5a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Zm9-.5V9h4.5L13 4.5ZM10 11.5v6l5-3-5-3Z"/></svg>
+      <h1>Drop a video here</h1>
+      <p>or <button class="link" id="browseBtn">browse your files</button> &mdash; MP4, MOV, MKV, WEBM</p>
+      <p class="hint" id="ffmpegWarning" hidden>ffmpeg was not found. Put <b>ffmpeg.exe</b> and <b>ffprobe.exe</b> in the <b>bin</b> folder next to the app.</p>
+    </div>
+  </section>
+
+  <!-- Editor -->
+  <section id="editor" hidden>
+    <div class="stage">
+      <video id="video" preload="auto" playsinline></video>
+      <div class="stage-overlay" id="stageOverlay" hidden>
+        <div class="spinner"></div>
+        <div id="stageOverlayText">Preparing preview…</div>
+      </div>
+    </div>
+
+    <div class="transport">
+      <button class="btn icon play" id="playBtn" title="Play / pause (Space)" aria-label="Play">
+        <svg id="playIcon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M7 4.5v15l12-7.5-12-7.5Z"/></svg>
+      </button>
+      <div class="timecode"><span id="curTime">0:00.00</span><span class="dim"> / <span id="durTime">0:00.00</span></span></div>
+      <label class="toggle" title="Only play the selected part, on repeat">
+        <input type="checkbox" id="loopSel" checked><span>Loop selection</span>
+      </label>
+      <div class="spacer"></div>
+      <div class="volume">
+        <button class="btn icon ghost" id="muteBtn" title="Mute preview" aria-label="Mute">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path id="volIconPath" fill="currentColor" d="M4 9v6h4l5 5V4L8 9H4Zm12.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4Z"/></svg>
+        </button>
+        <input type="range" id="volume" min="0" max="500" step="1" value="100" aria-label="Volume">
+        <span class="vol-value" id="volValue">100%</span>
+        <button class="btn small" id="autoVol" data-tip="Sets the volume to the standard level used by YouTube and most of the internet (about −14 LUFS), so your clip isn’t too quiet or too loud next to other videos.&#10;&#10;The whole clip goes up or down by the same amount — loud moments like laughs stay louder than the rest, just like in the original.&#10;&#10;If boosting would make the loudest moment distort, it stops just before that.">Auto volume</button>
+        <button class="btn tiny ghost" id="volReset" data-tip="Back to the original volume">Reset</button>
+        <div class="dyn-wrap">
+          <button class="btn small ghost" id="dynBtn" aria-expanded="false" data-tip="Optional sound tools: even out the voices in your call, tame loud moments, bring up quiet ones. All off unless you turn them on.">Sound <span class="dot" id="dynDot" hidden></span></button>
+          <div class="popover" id="dynPanel" hidden>
+            <div class="pop-head">
+              <b>Even out voices</b>
+              <span class="info" tabindex="0" data-tip="An AI model (runs offline on this PC) separates the voices from the game. The voices are then evened out so everyone in the call — you and your friends — ends up at a similar volume. The game is left exactly as it was.&#10;&#10;Loud moments like laughs stay louder than normal talking.&#10;&#10;Limits: people talking over each other get evened out together; in-game voices and songs with singing count as voices; a little game sound can stay mixed into the voices.">?</span>
+            </div>
+            <p class="pop-text dim" id="voicesIntro">Makes everyone in the call about equally loud, without touching the game. Analyzing takes about as long as the clip.</p>
+            <div id="voicesIdle">
+              <button class="btn small primary" id="voicesBtn">Analyze &amp; even out voices</button>
+            </div>
+            <div id="voicesOn" hidden>
+              <label class="check"><input type="checkbox" id="voicesToggle" checked> Voices evened out</label>
+              <p class="note warn" id="voicesStale" hidden>The trim now goes outside the analyzed part, so this can’t be used. <button class="link" id="voicesAgain">Analyze again</button></p>
+              <label class="slider-row">
+                <span>Voices <small class="dim" data-tip="Extra volume for the voices on top of evening them out. 0 = as analyzed.">ⓘ</small></span>
+                <input type="range" id="voicesDb" min="-12" max="12" step="0.5" value="0">
+                <span class="amt" id="voicesDbVal">0 dB</span>
+              </label>
+              <label class="slider-row">
+                <span>Game <small class="dim" data-tip="Volume of everything that isn’t a voice. 0 = unchanged.">ⓘ</small></span>
+                <input type="range" id="gameDb" min="-24" max="12" step="0.5" value="0">
+                <span class="amt" id="gameDbVal">0 dB</span>
+              </label>
+            </div>
+            <hr class="pop-sep">
+            <div class="pop-head">
+              <b>Loud &amp; quiet parts</b>
+              <span class="info" tabindex="0" data-tip="These change the balance inside the clip, unlike the volume slider which moves everything together. Both are off by default.&#10;&#10;Limits:&#10;• A laugh that already distorted the microphone can be made quieter, but not clean again — the distortion is part of the recording.&#10;• Game and voice share one sound track, so “Boost quiet parts” raises every quiet sound, not only voices. It works best when the voice is the main quiet sound.">?</span>
+            </div>
+            <label class="slider-row">
+              <span>Tame loud parts <small class="dim" data-tip="Brings down sudden loud moments — laughs, screams, peaks that blast the listener. Normal-level sound is left alone.">ⓘ</small></span>
+              <input type="range" id="tame" min="0" max="100" step="1" value="0">
+              <span class="amt" id="tameVal">Off</span>
+            </label>
+            <label class="slider-row">
+              <span>Boost quiet parts <small class="dim" data-tip="Brings up quiet sound — whispering, quiet talking — without making loud parts louder.">ⓘ</small></span>
+              <input type="range" id="boost" min="0" max="100" step="1" value="0">
+              <span class="amt" id="boostVal">Off</span>
+            </label>
+            <div class="pop-foot">
+              <span class="dim">You hear the changes while previewing.</span>
+              <button class="btn tiny ghost" id="dynReset" data-tip="Turn off Tame loud parts and Boost quiet parts">Turn off</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline" id="timeline">
+      <div class="track" id="track">
+        <div class="kf-layer" id="kfLayer"></div>
+        <div class="shade left" id="shadeLeft"></div>
+        <div class="shade right" id="shadeRight"></div>
+        <div class="kf-extra" id="ghost" hidden></div>
+        <div class="selection" id="selection"></div>
+        <div class="handle start" id="handleStart" title="Drag to set the start"><span></span></div>
+        <div class="handle end" id="handleEnd" title="Drag to set the end"><span></span></div>
+        <div class="playhead" id="playhead"></div>
+      </div>
+      <div class="ruler" id="ruler"></div>
+    </div>
+
+    <div class="panels">
+      <div class="card trim">
+        <h2>Trim</h2>
+        <div class="trim-row">
+          <label>Start</label>
+          <button class="btn tiny ghost nudge" data-target="start" data-delta="-1" title="−1 s">−1s</button>
+          <button class="btn tiny ghost nudge" data-target="start" data-delta="-0.1" title="−0.1 s">−.1</button>
+          <input class="time-input" id="startInput" spellcheck="false">
+          <button class="btn tiny ghost nudge" data-target="start" data-delta="0.1" title="+0.1 s">+.1</button>
+          <button class="btn tiny ghost nudge" data-target="start" data-delta="1" title="+1 s">+1s</button>
+          <button class="btn small" id="setStart" title="Set start to the current position (I)">Set to playhead <kbd>I</kbd></button>
+        </div>
+        <div class="trim-row">
+          <label>End</label>
+          <button class="btn tiny ghost nudge" data-target="end" data-delta="-1">−1s</button>
+          <button class="btn tiny ghost nudge" data-target="end" data-delta="-0.1">−.1</button>
+          <input class="time-input" id="endInput" spellcheck="false">
+          <button class="btn tiny ghost nudge" data-target="end" data-delta="0.1">+.1</button>
+          <button class="btn tiny ghost nudge" data-target="end" data-delta="1">+1s</button>
+          <button class="btn small" id="setEnd" title="Set end to the current position (O)">Set to playhead <kbd>O</kbd></button>
+        </div>
+        <div class="trim-summary">
+          <div><span class="dim">Clip length</span> <b id="clipLen">0:00.00</b></div>
+          <button class="btn tiny ghost" id="resetTrim">Reset trim</button>
+        </div>
+        <p class="note" id="kfNote"></p>
+      </div>
+
+      <div class="card export">
+        <h2>Export</h2>
+        <div class="segmented" role="radiogroup" aria-label="Cut mode">
+          <button data-mode="lossless" class="active" role="radio" data-tip="An exact copy of the original video — no quality loss, saves in about a second.&#10;&#10;The catch: a clip can only start on a keyframe (a full picture the video is built from, usually every 1–2 seconds, sometimes much further apart). So the clip may start a bit before the time you chose — the app shows you exactly where. The end can be anywhere.&#10;&#10;Volume: at 100% the sound is copied untouched; if you change it, only the sound is re-processed.">
+            <b>Lossless</b><small>Instant · original quality</small>
+          </button>
+          <button data-mode="precise" role="radio" data-tip="Starts on exactly the frame you chose.&#10;&#10;To do that the video is re-processed at very high quality: it looks the same, but it’s not a bit-perfect copy. Slower (seconds to a minute or so). It never uses more data per second than the original, so the file won’t come out bigger than it should.&#10;&#10;Volume works the same as in Lossless.">
+            <b>Frame-exact</b><small>Re-encodes video (near-lossless)</small>
+          </button>
+        </div>
+        <p class="note" id="modeNote"></p>
+        <div class="quality-row">
+          <label for="quality" class="dim">File size</label>
+          <select id="quality" class="text-input">
+            <option value="original">Original quality (no loss)</option>
+            <option value="high">High — a bit smaller</option>
+            <option value="balanced">Balanced — about half</option>
+            <option value="small">Small — much smaller</option>
+          </select>
+          <span class="info" tabindex="0" data-tip="Original quality keeps everything (default).&#10;&#10;High / Balanced / Small re-process the video to make the file smaller — the smaller, the more quality is lost. Small also shrinks videos bigger than 1080p down to 1080p.&#10;&#10;Making a file smaller always cuts frame-exact.">?</span>
+        </div>
+        <div class="dest">
+          <span class="dim">Save to</span>
+          <span class="dest-path" id="destPath">Ask every time</span>
+          <button class="btn tiny ghost" id="changeDest">Change</button>
+        </div>
+        <div class="export-actions">
+          <button class="btn primary" id="exportBtn">Save as new clip</button>
+          <button class="btn danger-ghost" id="replaceBtn">Replace original</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="shortcuts dim">Space play/pause · I / O set start / end · ← → step a frame (Shift = 1 s) · Home / End jump to start / end of selection</p>
+  </section>
+</main>
+
+<!-- Drag overlay -->
+<div class="drag-overlay" id="dragOverlay" hidden><div>Drop to open</div></div>
+
+<!-- Modal: settings -->
+<div class="modal-backdrop" id="settingsModal" hidden>
+  <div class="modal" role="dialog" aria-labelledby="settingsTitle">
+    <h2 id="settingsTitle">Settings</h2>
+    <div class="field">
+      <label>Default export folder</label>
+      <div class="folder-row">
+        <span class="dest-path" id="setFolderPath">Not set — you'll be asked each time</span>
+        <button class="btn small" id="setFolderBtn">Choose…</button>
+        <button class="btn small ghost" id="clearFolderBtn">Clear</button>
+      </div>
+      <small class="dim">Folders on the same drive as the app are remembered relative to it, so it keeps working if your USB stick gets a different drive letter.</small>
+    </div>
+    <label class="check"><input type="checkbox" id="setAlwaysAsk"> Always ask where to save (ignore the default folder)</label>
+    <label class="check"><input type="checkbox" id="setReveal"> Show the new clip in File Explorer after saving</label>
+    <div class="field inline">
+      <label for="setSuffix">File name ending</label>
+      <input id="setSuffix" class="text-input" maxlength="40">
+      <small class="dim" id="suffixExample"></small>
+    </div>
+    <div class="field inline">
+      <label>Default mode</label>
+      <select id="setMode" class="text-input">
+        <option value="lossless">Lossless (instant)</option>
+        <option value="precise">Frame-exact (re-encode)</option>
+      </select>
+    </div>
+    <div class="modal-actions"><button class="btn primary" id="settingsDone">Done</button></div>
+  </div>
+</div>
+
+<!-- Modal: confirm replace -->
+<div class="modal-backdrop" id="confirmModal" hidden>
+  <div class="modal narrow" role="alertdialog" aria-labelledby="confirmTitle">
+    <h2 id="confirmTitle">Replace the original file?</h2>
+    <p id="confirmText"></p>
+    <p class="dim">This can't be undone — the parts you trimmed away are gone for good.</p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="confirmCancel">Cancel</button>
+      <button class="btn danger" id="confirmOk">Replace</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: progress -->
+<div class="modal-backdrop" id="progressModal" hidden>
+  <div class="modal narrow">
+    <h2 id="progressTitle">Saving clip…</h2>
+    <div class="progress"><div class="bar" id="progressBar"></div></div>
+    <p class="dim" id="progressText">0%</p>
+    <div class="modal-actions" id="progressActions" hidden><button class="btn ghost" id="progressCancel">Cancel</button></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+<div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>

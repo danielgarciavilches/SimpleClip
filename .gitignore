@@ -1,0 +1,25 @@
+# Things git should NOT save (big, made automatically, or downloaded separately)
+
+# Build tools made by setup.ps1
+.venv/
+.python/
+.tools/
+
+# Temporary build files and the finished app (share the app as a Release zip instead)
+build/
+SimpleClip-Portable/
+
+# ffmpeg (too big for GitHub) - see README.md for where to get it
+bin/
+
+# The voice AI model - setup.ps1 downloads it
+models/
+
+# Python cache and test leftovers
+__pycache__/
+*.pyc
+settings.json
+report.txt
+
+# Release zips (they go to GitHub Releases, not into git)
+*.zip

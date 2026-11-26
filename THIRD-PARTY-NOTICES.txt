@@ -1,0 +1,52 @@
+SIMPLECLIP - THIRD-PARTY NOTICES
+================================
+
+SimpleClip itself is MIT-licensed (see SimpleClip-LICENSE.txt in the
+licenses folder). This app also includes the following third-party software.
+Each keeps its own license; the full texts are in the "licenses" folder.
+
+
+FFmpeg (bin\ffmpeg.exe, bin\ffprobe.exe)
+  Version 9.0.2, "essentials" Windows build by Gyan Doshi (https://www.gyan.dev/ffmpeg/builds/).
+  License: GNU General Public License v3 (licenses\FFmpeg-GPL-3.0.txt).
+  FFmpeg runs as a separate program; SimpleClip starts it to cut videos
+  and process audio. It is included unmodified.
+  Source code of this exact version:
+    https://github.com/FFmpeg/FFmpeg/tree/n9.0.2
+    https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz
+  Build configuration: run "bin\ffmpeg.exe -version".
+
+Kim_Vocal_2 voice separation model (models\Kim_Vocal_2.onnx)
+  Created by Kimberley Jensen (https://github.com/KimberleyJensen), released
+  with Ultimate Vocal Remover (https://github.com/Anjok07/ultimatevocalremovergui).
+  Used with the author's permission: "You are free to use the MDX-Net model
+  Kim_Vocal_2 (Kim_Vocal_2.onnx) in any way you like, including for
+  commercial use." (2 Oct 2026)
+  https://github.com/KimberleyJensen/kmdx-net_music-source-separation/issues/3
+  The way the model is run (MDX-Net settings) follows Ultimate Vocal Remover
+  (MIT License). Thanks to the UVR developers.
+
+Python 3.12 runtime - PSF License (licenses\Python-LICENSE.txt, which also
+  covers the libraries Python bundles, such as OpenSSL, libffi, SQLite, zlib).
+
+Python libraries included in the app (licenses\<name>\):
+  pywebview      BSD-3-Clause   https://github.com/r0x0r/pywebview
+  ONNX Runtime   MIT            https://onnxruntime.ai
+                 (plus its ThirdPartyNotices.txt)
+  NumPy          BSD-3-Clause and others (OpenBLAS etc., see its folder)
+  pythonnet      MIT            https://github.com/pythonnet/pythonnet
+  clr_loader     MIT            https://github.com/pythonnet/clr-loader
+  bottle         MIT            https://bottlepy.org
+  proxy_tools    MIT            https://github.com/jtushman/proxy_tools
+  cffi           MIT-0          https://github.com/python-cffi/cffi
+  pycparser      BSD-3-Clause   https://github.com/eliben/pycparser
+  packaging      Apache-2.0 or BSD-2-Clause
+  typing_extensions  PSF-2.0
+
+PyInstaller bootloader (packs the app into SimpleClip.exe)
+  GPL-2.0-or-later with the PyInstaller exception, which allows apps built
+  with it to use any license (licenses\pyinstaller\).
+
+Microsoft Visual C++ runtime (_internal\msvcp140.dll and related DLLs)
+  Redistributable files from Microsoft Visual C++, distributed under
+  Microsoft's redistribution terms.

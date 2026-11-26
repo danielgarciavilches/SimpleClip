@@ -1,7 +1,8 @@
 # SimpleClip
 
-A small portable video trimmer for Windows. Open a video, pick the start and end, save the clip.
-Nothing to install, and it runs from a USB stick.
+A small video trimmer for Windows. Open a video, pick the start and end, save the clip.
+
+Website: [simpleclip.danielgarciavilches.com](https://simpleclip.danielgarciavilches.com)
 
 ![SimpleClip](docs/screenshot.png)
 
@@ -17,12 +18,13 @@ Nothing to install, and it runs from a USB stick.
 
 ## Download
 
-Get the latest zip from [Releases](../../releases), unzip it and run `SimpleClip.exe`.
-Requires Windows 10 or 11.
+Requires Windows 10 or 11. There are two versions, and they work the same:
 
-If Windows SmartScreen says "Windows protected your PC", click More info, then Run anyway.
+- [Microsoft Store](https://apps.microsoft.com/detail/9PNR91FJXGCF): installs and updates like any other Store app.
+- Portable zip: get the latest from [Releases](../../releases), unzip it and run `SimpleClip.exe`. Nothing to install, and it runs from a USB stick.
 
-The first start can take up to a minute, because Windows checks the new files. After that it opens in a couple of seconds.
+With the portable version, if Windows SmartScreen says "Windows protected your PC", click More info, then Run anyway.
+Its first start can take up to a minute, because Windows checks the new files. After that it opens in a couple of seconds.
 
 ## Building from source
 
